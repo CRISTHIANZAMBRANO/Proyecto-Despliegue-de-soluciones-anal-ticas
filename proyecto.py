@@ -19,7 +19,7 @@ import mlflow
 import mlflow.sklearn
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
-
+import joblib
 DATASET = "rehan497/health-lifestyle-dataset"
 TARGET_DIR = "./data"
 
@@ -239,6 +239,10 @@ def main():
 
             # 6. Guardar el modelo
             mlflow.sklearn.log_model(model, artifact_path="model")
+
+            if model_name == "XGBoostClassifier":
+                joblib.dump(model, "model_xgboost.pkl")
+                print("Modelo XGBoost guardado en model_xgboost.pkl")
 
     rf_params = {
         "n_estimators": 200,
