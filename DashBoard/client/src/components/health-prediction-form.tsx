@@ -20,6 +20,7 @@ interface HealthPredictionFormProps {
 
 export function HealthPredictionForm({ onPredictionComplete }: HealthPredictionFormProps) {
   const { toast } = useToast();
+  const predictUrl = import.meta.env.VITE_PREDICT_URL || "/api/predict";
 
   const form = useForm<FormValues>({
     resolver: zodResolver(insertHealthPredictionSchema),
@@ -38,7 +39,7 @@ export function HealthPredictionForm({ onPredictionComplete }: HealthPredictionF
 
   const predictMutation = useMutation({
     mutationFn: async (data: FormValues) => {
-      const response = await apiRequest("POST", "/api/predict", data);
+      const response = await apiRequest("POST", predictUrl, data);
       const result = await response.json() as PredictionResponse;
       return result;
     },
