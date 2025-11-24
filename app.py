@@ -29,8 +29,8 @@ def predict(data: PatientData):
 
     # Hacer la predicción
     proba = model.predict_proba(X)[0][1]  # Probabilidad de riesgo (clase 1)
-
+    print(proba)
     return {
-        "riesgo_muerte": round(float(proba) * 100, 2),
-        "mensaje": "Probabilidad estimada de riesgo de muerte (%)"
+        float(proba)
+        
     }
