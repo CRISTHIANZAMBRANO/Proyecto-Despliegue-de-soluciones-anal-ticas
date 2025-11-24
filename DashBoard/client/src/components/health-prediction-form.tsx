@@ -20,7 +20,10 @@ interface HealthPredictionFormProps {
 
 export function HealthPredictionForm({ onPredictionComplete }: HealthPredictionFormProps) {
   const { toast } = useToast();
-  const predictUrl = import.meta.env.VITE_PREDICT_URL || "/api/predict";
+  const predictUrl = "https://24np1xwd-8000.use2.devtunnels.ms/predict";
+  if (!predictUrl) {
+    throw new Error("VITE_PREDICT_URL is required to submit predictions.");
+  }
 
   const form = useForm<FormValues>({
     resolver: zodResolver(insertHealthPredictionSchema),
@@ -39,7 +42,20 @@ export function HealthPredictionForm({ onPredictionComplete }: HealthPredictionF
 
   const predictMutation = useMutation({
     mutationFn: async (data: FormValues) => {
-      const response = await apiRequest("POST", predictUrl, data);
+      // Map internal form fields to the API's expected snake_case + 0/1 shape
+      const payload = {
+        age: Number(data.age),
+        bmi: Number(data.bmi),
+        cholesterol: Number(data.cholesterol),
+        systolic_bp: Number(data.systolicBp),
+        smoker: data.smoker ? 1 : 0,
+        alcohol: data.alcohol ? 1 : 0,
+        daily_steps: Number(data.dailySteps),
+        sleep_hours: Number(data.sleepHours),
+        family_history: data.familyHistory ? 1 : 0,
+      };
+
+      const response = await apiRequest("POST", predictUrl, payload);
       const result = await response.json() as PredictionResponse;
       return result;
     },
