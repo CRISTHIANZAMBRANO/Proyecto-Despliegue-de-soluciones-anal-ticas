@@ -1,24 +1,33 @@
-# Imagen base de Node
-FROM node:20-alpine
-
-# Directorio de trabajo
+# Build: Vite
+FROM node:20-alpine AS build
 WORKDIR /app
-
-# Copiar package.json y lockfile (si existe)
 COPY package*.json ./
-
-# Instalar dependencias
-RUN npm install
-
-# Copiar el resto del código
+RUN npm ci
 COPY . .
-
-# Construir versión de producción
 RUN npm run build
 
-# Exponer puerto (Railway usará PORT)
-EXPOSE 5173
-ENV PORT=5173
+# Runtime: Nginx sirviendo el build
+FROM nginx:1.27-alpine
+ENV PORT=8000
+RUN apk add --no-cache gettext \
+ && rm /etc/nginx/conf.d/default.conf
 
-# Servir el build. Con Vite:
-CMD ["sh", "-c", "npm run preview -- --host 0.0.0.0 --port ${PORT}"]
+# plantilla que usa $PORT
+COPY <<'EOF' /etc/nginx/conf.d/default.conf.template
+server {
+    listen ${PORT};
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+EOF
+
+# renderiza la plantilla con envsubst y arranca nginx
+CMD envsubst '$PORT' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf \
+ && nginx -g 'daemon off;'
+
+COPY --from=build /app/dist/public /usr/share/nginx/html
+EXPOSE 8000
