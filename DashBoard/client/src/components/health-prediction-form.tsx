@@ -20,7 +20,7 @@ interface HealthPredictionFormProps {
 
 export function HealthPredictionForm({ onPredictionComplete }: HealthPredictionFormProps) {
   const { toast } = useToast();
-  const predictUrl = "https://24np1xwd-8000.use2.devtunnels.ms/predict";
+  const predictUrl = "https://invigorating-fulfillment-production-0ef3.up.railway.app/predict";
   if (!predictUrl) {
     throw new Error("VITE_PREDICT_URL is required to submit predictions.");
   }
